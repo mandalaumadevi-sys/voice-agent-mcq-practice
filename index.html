@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Escape Rooms</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #0d0b10; --card: #18141d; --ink: #f3ece2; --muted: #a89f95; --accent: #ffb547; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; background: radial-gradient(circle at 50% 0, #2a1f14, var(--bg) 60%); color: var(--ink); font-family: 'Space Grotesk', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 48px 16px; }
+  h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(44px, 9vw, 80px); letter-spacing: 3px; margin: 0; color: var(--accent); }
+  p.sub { color: var(--muted); margin: 6px 0 36px; }
+  .grid { display: grid; gap: 16px; width: 100%; max-width: 760px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  a.room { display: block; padding: 22px; border-radius: 14px; background: var(--card); border: 1px solid #2c2530; color: inherit; text-decoration: none; transition: transform .15s, border-color .15s; }
+  a.room:hover, a.room:focus-visible { transform: translateY(-3px); border-color: var(--accent); }
+  a.room b { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 1px; display: block; }
+  a.room span { color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<h1>Escape Rooms</h1>
+<p class="sub">Pick a room. Solve the locks. Find the key.</p>
+<div class="grid" id="rooms"></div>
+<script src="shared/rooms.js"></script>
+<script>
+  const q = location.search;
+  document.getElementById('rooms').innerHTML = ESCAPE_ROOMS.map(r =>
+    `<a class="room" href="rooms/${r.id}/${q}"><b>${r.title}</b><span>${r.session}</span></a>`).join('');
+</script>
+</body>
+</html>

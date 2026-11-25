@@ -1,0 +1,160 @@
+/* Styles for shared/questions-extra.js (markup, typein, pickmany, spot ⟦⟧) and shared/howto-cards.js.
+   Colours come from the room's CSS variables, so every room theme applies. */
+
+/* ---------- markup: build a rich string, see it print live ---------- */
+.mk{display:flex;flex-direction:column;gap:10px}
+.mk .mkline{font-size:14px;line-height:2.1;min-height:52px}
+.mkslot{display:inline;padding:0 2px}
+.mkhint{color:var(--mute);font-style:italic;font-family:var(--sans);font-size:13px}
+.mkp{font:inherit;font-size:13.5px;padding:3px 8px;margin:0 1px;border-radius:7px;border:1px solid var(--amber);background:color-mix(in srgb,var(--amber) 18%,transparent);color:var(--ink);cursor:pointer;animation:mkin .25s cubic-bezier(.2,1.6,.4,1)}
+.mkp:hover{background:rgba(255,90,74,.25);border-color:var(--coral);text-decoration:line-through}
+@keyframes mkin{from{transform:scale(.4);opacity:0}}
+.mkgoal{display:flex;align-items:center;gap:12px;padding:8px 12px;border-radius:12px;background:#05070d;border:1px solid var(--line)}
+.mkgoal small{flex:none;width:118px;font-size:9.5px;letter-spacing:1.5px;color:var(--mute);line-height:1.3}
+.mkgoal.live{border-color:color-mix(in srgb,var(--teal) 45%,transparent)}
+.mkscreen{font-family:var(--mono);font-size:15px;color:#d8e1ea;min-height:24px;white-space:pre-wrap}
+.mkscreen.flash{animation:mkflash .35s}
+@keyframes mkflash{from{text-shadow:0 0 12px var(--teal)}}
+.mkempty{color:#4f5b73;font-style:italic}
+.rs-bold{font-weight:800;color:#fff}.rs-grey50{color:#7f7f7f}.rs-red{color:#ff5f57}.rs-green{color:#5fdf7f}.rs-yellow{color:#febc2e}
+.mk.right .mkgoal.live{border-color:var(--lime);box-shadow:0 0 18px -4px var(--lime)}
+.mk.wrong .mkgoal.live{border-color:var(--coral)}
+.tok.used{opacity:.18;pointer-events:none}
+
+/* ---------- typein: a live terminal / editor line ---------- */
+.tin .tinrow{display:flex;align-items:center;cursor:text;margin-top:2px}
+.tin .tprompt{white-space:pre;color:#d8e1ea}
+.tinput{font:inherit;color:#fff;background:transparent;border:0;outline:none;padding:0;min-width:2ch;caret-color:transparent}
+.tin .caret{display:inline-block;width:9px;height:18px;background:var(--teal);animation:blinkred 1s steps(1) infinite;margin-left:-1ch}
+.tin.right .caret,.tin.wrong .caret{display:none}
+.tin.right .tinrow{color:var(--lime)}.tin.right .tinput{color:var(--lime)}
+.tin.wrong .tinput{color:var(--coral);text-decoration:line-through}
+.tin .tinrow:focus-within{background:rgba(63,214,198,.07);border-radius:6px}
+.tin.editor .tl{display:flex;gap:10px}
+.lnum{flex:none;width:2ch;text-align:right;color:#4f5b73;font-style:normal}
+.rpanel{position:relative;margin:10px 0 4px;padding:14px 14px 10px;border:1.5px solid #c8d0da;border-radius:4px;line-height:1.55;font-size:13px}
+.rptitle{position:absolute;top:-10px;left:50%;transform:translateX(-50%);padding:0 8px;background:#0b0d10;font-size:13px}
+
+/* ---------- pickmany: tap every card that fits ---------- */
+.pick{display:flex;flex-direction:column;gap:7px}
+.pickhead{font-size:14px;color:var(--mute);margin-bottom:2px}
+.pickrow{display:flex;align-items:center;gap:10px;text-align:left;padding:9px 12px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);font-size:14.5px;transition:.15s}
+.pickrow:hover{border-color:var(--teal)}
+.pickrow>i{flex:none;width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-style:normal;font-family:var(--mono);font-size:12.5px;background:#05070d;color:var(--mute)}
+.ptag{flex:none;width:58px;text-align:center;font-family:var(--mono);font-size:11px;font-weight:700;padding:3px 0;border-radius:6px;text-transform:lowercase}
+.ptag.human{background:rgba(181,140,255,.2);color:#cdb4ff}.ptag.ai{background:rgba(63,214,255,.18);color:#8fe6ff}.ptag.tool{background:rgba(127,127,127,.25);color:#c0c0c0}
+.ptag.pause{background:rgba(255,207,90,.2);color:#ffd77a}
+.ptxt{flex:1;line-height:1.3}
+.pcheck{flex:none;width:22px;height:22px;border-radius:7px;border:2px solid var(--line)}
+.pickrow.on{border-color:var(--amber);background:color-mix(in srgb,var(--amber) 12%,var(--panel2))}
+.pickrow.on .pcheck{background:var(--amber);border-color:var(--amber);box-shadow:0 0 10px var(--amber)}
+.pickrow.right{border-color:var(--lime);background:rgba(155,229,100,.16)}
+.pickrow.wrong{border-color:var(--coral);background:rgba(255,90,74,.16)}
+
+/* ---------- how to play: animated cards ---------- */
+/* the cards play in the engine's full-screen reel: a 3D screen floating above the caption */
+.reelbox.hcards{background:radial-gradient(ellipse at 50% 35%,#16213d,#04070f 70%);perspective:1600px}
+.reelbox.hcards video,.reelbox.hcards .reelplay{display:none}
+.hcholder{position:absolute;left:50%;top:9vh;width:min(980px,86vw,calc(56vh * 16 / 9));aspect-ratio:16/9;transform:translateX(-50%) rotateX(9deg);transform-style:preserve-3d;z-index:1}
+.hcholder.flip{animation:hcflip .8s cubic-bezier(.16,1,.3,1)}
+@keyframes hcflip{from{transform:translateX(-50%) rotateY(-70deg) rotateX(9deg) translateZ(-200px);opacity:0}to{transform:translateX(-50%) rotateX(9deg);opacity:1}}
+.hcstage{position:absolute;inset:0;overflow:hidden;border-radius:22px;border:1px solid rgba(127,220,255,.35);background:radial-gradient(ellipse at 50% 30%,#16213d,#060a14);
+  box-shadow:0 40px 80px rgba(0,0,0,.7),0 0 60px rgba(63,214,255,.18),inset 0 1px 0 rgba(255,255,255,.1)}
+.hcholder::after{content:'';position:absolute;left:8%;right:8%;bottom:-9%;height:12%;border-radius:50%;background:radial-gradient(rgba(63,214,255,.28),transparent 70%);filter:blur(10px);transform:translateZ(-40px)}
+.hcstage.paused *{animation-play-state:paused!important}
+#howOv.ended .hcholder{filter:blur(10px) brightness(.45)}
+.hc{position:absolute;inset:0;overflow:hidden;--hc-a:var(--teal);--hc-b:var(--amber)}
+.hc .hcwin{position:absolute;left:36%;top:9%;width:28%;height:26%;border-radius:22px;background:radial-gradient(circle at 50% 160%,#2a7bd8 0 42%,#0a0d24 43%);border:5px solid #3a4864}
+.hc .hcbox{position:absolute;bottom:22%;border-radius:10px;background:linear-gradient(#4d5d7d,#27324a);border:2px solid #1b2640}
+.hc .b1{left:10%;width:14%;height:50%}.hc .b2{left:38%;width:24%;height:24%}.hc .b3{left:72%;width:16%;height:34%}
+.hc::after{content:'';position:absolute;left:0;right:0;bottom:0;height:22%;background:linear-gradient(#1b2640,#0a1020)}
+.hchand{position:absolute;width:54px;height:60px;z-index:4;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
+
+/* 1: dark room, flashlight finds the lever, power on */
+.hc-dark .hclever{position:absolute;left:3%;top:36%;width:5%;height:16%;border-radius:8px;background:#141d33;border:2px solid #3a4864;z-index:3}
+.hc-dark .hclever i{position:absolute;left:12%;right:12%;top:8%;height:28%;border-radius:6px;background:#6dff9a;box-shadow:0 0 14px #6dff9a;animation:hclev 4.6s infinite}
+@keyframes hclev{0%,52%{top:8%}60%,100%{top:62%}}
+.hc-dark .hcbeam{position:absolute;width:24%;aspect-ratio:1;border-radius:50%;box-shadow:0 0 0 2000px rgba(2,3,8,.96);z-index:2;animation:hcbeam 4.6s infinite}
+@keyframes hcbeam{0%{left:60%;top:30%;opacity:1}22%{left:40%;top:50%}44%,52%{left:-6%;top:28%;opacity:1}62%{opacity:0;left:-6%;top:28%}100%{opacity:0;left:-6%;top:28%}}
+.hc-dark .hcpow{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);font-family:var(--disp);font-size:44px;letter-spacing:4px;color:#6dff9a;text-shadow:0 0 22px #6dff9a;z-index:3;opacity:0;animation:hcpow 4.6s infinite}
+@keyframes hcpow{0%,62%{opacity:0;transform:translate(-50%,-50%) scale(.6)}70%,92%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0}}
+
+/* 2: hand taps the locker, it shakes, the lock panel slides in */
+.hc-search .tgt{animation:hcshake 4.8s infinite}
+@keyframes hcshake{0%,30%{transform:none}33%{transform:translateX(-5px)}36%{transform:translateX(5px)}39%{transform:translateX(-3px)}42%,100%{transform:none}}
+.hc .hclock{position:absolute;left:50%;top:50%;width:30%;transform:translate(-50%,-50%)}
+.hc .hclock svg{width:100%;stroke:#ff7a59;fill:none;stroke-width:2.4}
+.hc-search .hchand{animation:hchand1 4.8s infinite}
+@keyframes hchand1{0%{left:60%;top:70%}26%{left:15%;top:52%}30%{transform:scale(.85)}34%,100%{left:15%;top:52%;transform:none}}
+.hcpanel{position:absolute;right:3%;top:8%;bottom:8%;width:40%;border-radius:14px;background:var(--panel);border:1px solid var(--line);padding:12px;display:flex;flex-direction:column;gap:10px;z-index:3;box-shadow:0 20px 50px rgba(0,0,0,.6);animation:hcpanel 4.8s infinite}
+@keyframes hcpanel{0%,40%{transform:translateX(120%)}52%,92%{transform:none}100%{transform:translateX(120%)}}
+.hcph{display:flex;align-items:center;gap:8px;font-size:14px}
+.hcph svg{width:20px;stroke:var(--amber);fill:none;stroke-width:2}
+.hcph span{margin-left:auto;display:flex;gap:4px}.hcph .t{width:10px;height:16px;border-radius:3px;border:1px solid var(--line)}.hcph .t.now{border-color:var(--amber);box-shadow:0 0 8px var(--amber)}
+.hcq em{display:block;height:9px;border-radius:5px;background:#2c3b58;margin-bottom:6px}.hcq em:last-child{width:60%}
+.hcopts{display:grid;gap:7px}.hcopts u{display:block;height:26px;border-radius:8px;background:var(--panel2);border:1px solid var(--line)}
+
+/* 3: first try right = +1; wrong first = try again, opens with no point */
+.hc-answer{display:grid;grid-template-columns:1fr 1fr;gap:5%;padding:7% 6%}
+.hcside{position:relative;border-radius:16px;background:var(--panel);border:1px solid var(--line);padding:14px;display:flex;flex-direction:column;gap:12px}
+.hcside small{font-size:11px;letter-spacing:2px;color:var(--mute)}
+.hcside .hcopts u{height:34px}
+.hc-answer .ok .pick{animation:hcok 5.4s infinite}
+@keyframes hcok{0%,25%{background:var(--panel2)}30%,100%{background:rgba(155,229,100,.3);border-color:var(--lime)}}
+.hc-answer .bad .pick{animation:hcbad 5.4s infinite}
+@keyframes hcbad{0%,25%{background:var(--panel2)}30%,100%{background:rgba(255,90,74,.3);border-color:var(--coral)}}
+.hc-answer .bad .pick2{animation:hcok2 5.4s infinite}
+@keyframes hcok2{0%,62%{background:var(--panel2)}67%,100%{background:rgba(155,229,100,.3);border-color:var(--lime)}}
+.hcres{position:absolute;left:50%;bottom:12%;transform:translateX(-50%);white-space:nowrap;font-family:var(--disp);font-size:30px;letter-spacing:2px;opacity:0}
+.hc-answer .ok .hcres{color:var(--lime);text-shadow:0 0 18px var(--lime);animation:hcres 5.4s infinite}
+@keyframes hcres{0%,30%{opacity:0;transform:translateX(-50%) scale(.5)}36%,100%{opacity:1;transform:translateX(-50%) scale(1)}}
+.hc-answer .bad .r1{color:var(--coral);animation:hcr1 5.4s infinite}
+@keyframes hcr1{0%,30%{opacity:0}36%,58%{opacity:1}62%,100%{opacity:0}}
+.hc-answer .bad .r2{color:var(--amber);animation:hcr2 5.4s infinite}
+@keyframes hcr2{0%,67%{opacity:0}73%,100%{opacity:1}}
+
+/* 4: the item glows with a tapping hand, then flies to the inventory */
+.hcinv{position:absolute;left:50%;bottom:4%;transform:translateX(-50%);display:flex;gap:8px;z-index:3}
+.hcinv span{width:46px;height:46px;border-radius:10px;background:#0a1020;border:1px solid var(--line);display:grid;place-items:center}
+.hcinv svg,.hcitem svg,.hcslotfill svg,.hcfly svg{width:28px;height:28px;stroke:var(--amber);fill:none;stroke-width:1.8}
+.hcinv span.got{border-color:var(--amber)}
+.hc .open{background:linear-gradient(#0a1020,#141d33)}
+.hcitem{position:absolute;left:15%;top:48%;width:56px;height:56px;border-radius:14px;display:grid;place-items:center;background:rgba(63,214,255,.15);z-index:3;animation:hcitem 4.6s infinite}
+.hcitem .ring{position:absolute;inset:-8px;border-radius:50%;border:3px solid var(--amber);animation:hcring 1s infinite}
+@keyframes hcring{from{transform:scale(.7);opacity:1}to{transform:scale(1.4);opacity:0}}
+@keyframes hcitem{0%,40%{left:15%;top:48%;opacity:1;transform:none}62%{left:calc(50% - 115px);top:calc(96% - 50px);transform:scale(.8);opacity:1}64%,100%{opacity:0;left:calc(50% - 115px);top:calc(96% - 50px)}}
+.hc-pickup .hchand{animation:hchand2 4.6s infinite}
+@keyframes hchand2{0%{left:50%;top:60%}22%,30%{left:19%;top:58%;transform:none}26%{transform:scale(.85)}40%,100%{left:19%;top:58%;opacity:0}}
+.hcslotfill{position:absolute;left:calc(50% - 135px);bottom:4%;width:46px;height:46px;border-radius:10px;border:1px solid var(--amber);display:grid;place-items:center;z-index:4;opacity:0;animation:hcfill 4.6s infinite}
+@keyframes hcfill{0%,63%{opacity:0;transform:scale(1.4)}70%,100%{opacity:1;transform:none;box-shadow:0 0 16px var(--amber)}}
+
+/* 5: tap the item, tap the object, the item flies in and the object works */
+.hc-use .hcinv span.got{animation:hcsel 5s infinite}
+@keyframes hcsel{0%,18%{transform:none;box-shadow:none}24%,46%{transform:translateY(-6px);box-shadow:0 0 0 2px var(--amber),0 0 18px var(--amber)}50%,100%{opacity:.35;transform:none}}
+.hc-use .hchand{animation:hchand3 5s infinite}
+@keyframes hchand3{0%{left:62%;top:72%}16%,20%{left:calc(50% - 112px);top:84%;transform:none}18%{transform:scale(.85)}36%,40%{left:47%;top:56%;transform:none}38%{transform:scale(.85)}48%,100%{left:47%;top:56%;opacity:0}}
+.hcfly{position:absolute;left:calc(50% - 135px);bottom:4%;width:46px;height:46px;border-radius:10px;background:#16213d;border:1px solid var(--amber);display:grid;place-items:center;z-index:3;opacity:0;animation:hcfly 5s infinite}
+@keyframes hcfly{0%,40%{opacity:0}42%{opacity:1;left:calc(50% - 135px);bottom:4%}52%{left:44%;bottom:60%;transform:scale(1.2)}58%{left:47%;bottom:36%;transform:scale(.4);opacity:.4}60%,100%{opacity:0;left:47%;bottom:36%}}
+.hc-use .tgt{overflow:hidden}
+.hcglow{position:absolute;inset:0;background:radial-gradient(circle,#6dff9a,transparent 70%);opacity:0;animation:hcglow 5s infinite}
+@keyframes hcglow{0%,58%{opacity:0}66%,100%{opacity:.9}}
+.hcwork{position:absolute;left:50%;top:22%;transform:translateX(-50%);font-family:var(--disp);font-size:34px;letter-spacing:3px;color:#6dff9a;text-shadow:0 0 18px #6dff9a;opacity:0;z-index:3;animation:hcwork 5s infinite}
+@keyframes hcwork{0%,62%{opacity:0;transform:translateX(-50%) translateY(10px)}70%,100%{opacity:1;transform:translateX(-50%)}}
+
+/* 6: lights turn green one by one, the pod hatch opens, stats */
+.hcdoor{position:absolute;left:50%;top:12%;width:24%;height:72%;transform:translateX(-50%);border-radius:26px;background:#27324a;border:4px solid #3a4864;overflow:hidden}
+.hcleds{position:absolute;top:4%;left:0;right:0;display:flex;justify-content:center;gap:6%;z-index:3}
+.hcleds i{width:12%;height:8px;border-radius:4px;background:#4a1414;animation:hcled 4.8s infinite}
+.hcleds i:nth-child(2){animation-delay:.25s}.hcleds i:nth-child(3){animation-delay:.5s}.hcleds i:nth-child(4){animation-delay:.75s}.hcleds i:nth-child(5){animation-delay:1s}
+@keyframes hcled{0%,10%{background:#4a1414}18%,100%{background:#4dff88;box-shadow:0 0 8px #4dff88}}
+.hclight{position:absolute;inset:0;background:radial-gradient(circle,#fff,#bfe8ff 40%,#5fb8ff)}
+.hcleaf{position:absolute;top:0;bottom:0;width:50%;background:linear-gradient(90deg,#3c4a68,#55678c);z-index:2;animation:hcleafl 4.8s infinite}
+.hcleaf.l{left:0;border-right:4px solid var(--amber)}.hcleaf.r{right:0;border-left:4px solid var(--amber);animation-name:hcleafr}
+@keyframes hcleafl{0%,40%{transform:none}60%,100%{transform:translateX(-100%)}}
+@keyframes hcleafr{0%,40%{transform:none}60%,100%{transform:translateX(100%)}}
+.hcstats{position:absolute;left:50%;bottom:6%;transform:translateX(-50%);display:flex;gap:16px;z-index:3;opacity:0;animation:hcstats 4.8s infinite}
+.hcstats span{padding:6px 16px;border-radius:12px;background:rgba(6,10,20,.9);border:1px solid var(--line);text-align:center}
+.hcstats small{display:block;font-size:9.5px;letter-spacing:2px;color:var(--mute)}
+.hcstats b{font-family:var(--mono);font-size:22px;color:var(--amber)}
+@keyframes hcstats{0%,60%{opacity:0;transform:translateX(-50%) translateY(14px)}70%,100%{opacity:1;transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.hc *{animation-duration:0s!important}}

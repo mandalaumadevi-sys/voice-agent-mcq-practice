@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Escape Rooms Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="../shared/config.js"></script>
+<script src="../shared/rooms.js"></script>
+<style>
+:root{
+  color-scheme:light;
+  --surface-0:#f4f3f0;--surface-1:#fcfcfb;--surface-2:#f0efec;--line:#e2e0da;
+  --text-primary:#0b0b0b;--text-secondary:#52514e;--text-muted:#7a7873;
+  --series-1:#2a78d6;--series-1-soft:#cde2fb;--brand:#c46f00;
+  --good:#0ca30c;--warning:#fab219;--serious:#ec835a;--critical:#d03b3b;--good-text:#006300;
+  --mono:'JetBrains Mono',ui-monospace,monospace;--sans:'Space Grotesk',system-ui,sans-serif;--disp:'Bebas Neue','Space Grotesk',sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;--surface-0:#121211;--surface-1:#1a1a19;--surface-2:#242422;--line:#33332f;
+  --text-primary:#f0efec;--text-secondary:#c3c2b7;--text-muted:#8f8e86;
+  --series-1:#3987e5;--series-1-soft:#184f95;--brand:#ffb547;--good-text:#4fd14f;
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;--surface-0:#121211;--surface-1:#1a1a19;--surface-2:#242422;--line:#33332f;
+  --text-primary:#f0efec;--text-secondary:#c3c2b7;--text-muted:#8f8e86;
+  --series-1:#3987e5;--series-1-soft:#184f95;--brand:#ffb547;--good-text:#4fd14f;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--surface-0);color:var(--text-primary);font-family:var(--sans);font-size:14px}
+button,input,select{font:inherit;color:inherit}
+.wrap{max-width:1320px;margin:0 auto;padding:18px 20px 40px}
+header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+header h1{margin:0;font-family:var(--disp);font-weight:400;font-size:34px;letter-spacing:1.5px;color:var(--brand);line-height:1}
+header .sub{color:var(--text-muted);font-size:13px}
+.grow{flex:1}
+.live{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:20px;border:1px solid var(--line);background:var(--surface-1);font-size:12.5px;color:var(--text-secondary)}
+.live i{width:9px;height:9px;border-radius:50%;background:var(--text-muted)}
+.live.on i{background:var(--good);box-shadow:0 0 0 0 rgba(12,163,12,.6);animation:ping 1.8s infinite}
+@keyframes ping{70%{box-shadow:0 0 0 8px rgba(12,163,12,0)}100%{box-shadow:0 0 0 0 rgba(12,163,12,0)}}
+select,.btn,input[type=search],input[type=number]{border:1px solid var(--line);background:var(--surface-1);border-radius:9px;padding:8px 11px}
+.btn{cursor:pointer;font-weight:600}
+.btn:hover{border-color:var(--text-muted)}
+.btn.primary{background:var(--series-1);border-color:var(--series-1);color:#fff}
+.card{background:var(--surface-1);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.card h2{margin:0 0 2px;font-size:15px}
+.card .hint{margin:0 0 12px;color:var(--text-muted);font-size:12.5px}
+.tiles{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:14px}
+.tile{background:var(--surface-1);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.tile small{display:block;font-size:11.5px;letter-spacing:.5px;color:var(--text-secondary)}
+.tile b{display:block;font-family:var(--mono);font-size:28px;font-weight:600;margin-top:4px;font-variant-numeric:tabular-nums}
+.tile span{font-size:12px;color:var(--text-muted)}
+.grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:14px;margin-bottom:14px}
+.status{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;white-space:nowrap}
+.status i{width:8px;height:8px;border-radius:50%;flex:none}
+.st-play i{background:var(--good)}.st-esc i{background:var(--series-1)}.st-out i{background:var(--critical)}.st-wait i{background:var(--warning)}
+/* playing now */
+.live-list{display:flex;flex-direction:column;gap:8px;max-height:330px;overflow:auto}
+.lrow{display:grid;grid-template-columns:minmax(140px,1.2fr) 2fr 70px 64px;gap:12px;align-items:center;padding:9px 10px;border-radius:10px;background:var(--surface-2)}
+.lrow .who b{display:block;font-size:13.5px}.lrow .who span{font-size:12px;color:var(--text-muted)}
+.prog{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.prog i{display:block;height:100%;background:var(--series-1);border-radius:4px;transition:width .6s}
+.lrow .lock{font-size:12px;color:var(--text-secondary);margin-top:4px}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+.empty{color:var(--text-muted);padding:18px;text-align:center;border:1px dashed var(--line);border-radius:10px}
+/* feed */
+.feed{display:flex;flex-direction:column;gap:2px;max-height:330px;overflow:auto;font-size:13px}
+.feed div{display:grid;grid-template-columns:18px 1fr auto;gap:8px;padding:6px 4px;border-bottom:1px solid var(--line);align-items:start}
+.feed .ok{color:var(--good-text);font-weight:700}.feed .no{color:var(--critical);font-weight:700}
+.feed time{color:var(--text-muted);font-size:12px;white-space:nowrap}
+.feed div.new{animation:flashrow 1.6s}
+@keyframes flashrow{from{background:var(--series-1-soft)}}
+/* question chart */
+.qchart{display:flex;flex-direction:column;gap:4px}
+.qrow{display:grid;grid-template-columns:200px 1fr 92px;gap:10px;align-items:center;padding:3px 0;position:relative}
+.qrow .lbl{font-size:12.5px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qrow .bar{height:18px;position:relative}
+.qrow .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--series-1);border-radius:0 4px 4px 0;min-width:2px}
+.qrow .bar::after{content:'';position:absolute;left:50%;top:-3px;bottom:-3px;border-left:1px dashed var(--line)}
+.qrow .val{font-family:var(--mono);font-size:12.5px;text-align:right;white-space:nowrap}
+.qrow .val .hard{color:var(--critical);font-family:var(--sans);font-size:11px;font-weight:700;margin-right:4px}
+.qrow:hover{background:var(--surface-2);border-radius:6px}
+.tip{position:fixed;z-index:50;pointer-events:none;max-width:340px;padding:10px 12px;border-radius:10px;background:var(--surface-1);border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.18);font-size:12.5px;line-height:1.45;display:none}
+.tip b{display:block;margin-bottom:3px}
+/* histogram */
+.hist{display:flex;align-items:flex-end;gap:2px;height:150px;padding-top:8px;border-bottom:1px solid var(--line)}
+.hist .col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%;position:relative}
+.hist .col i{display:block;background:var(--series-1);border-radius:4px 4px 0 0;min-height:0}
+.hist .col:hover i{opacity:.8}
+.histx{display:flex;gap:2px;font-family:var(--mono);font-size:10.5px;color:var(--text-muted)}
+.histx span{flex:1;text-align:center}
+/* students table */
+.tbar{display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.tbar input[type=search]{min-width:260px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:11.5px;letter-spacing:.4px;color:var(--text-secondary);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line);cursor:pointer;white-space:nowrap;user-select:none}
+th.sorted::after{content:' ▾'}th.sorted.asc::after{content:' ▴'}
+td{padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+tbody tr{cursor:pointer}tbody tr:hover{background:var(--surface-2)}
+.dots{display:inline-flex;gap:3px;vertical-align:middle;margin-left:6px}
+.dots i{width:6px;height:6px;border-radius:50%;background:var(--line)}.dots i.u{background:var(--text-secondary)}
+/* drawer */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100vw);background:var(--surface-1);border-left:1px solid var(--line);box-shadow:-20px 0 50px rgba(0,0,0,.15);transform:translateX(105%);transition:transform .3s;z-index:40;display:flex;flex-direction:column}
+.drawer.on{transform:none}
+.drawer header{padding:16px 18px;border-bottom:1px solid var(--line);margin:0}
+.drawer .body{padding:14px 18px;overflow:auto;flex:1}
+.drawer h3{margin:16px 0 8px;font-size:13px;letter-spacing:.4px;color:var(--text-secondary)}
+.runs td,.runs th{padding:6px 8px}
+.qgrid{display:flex;flex-direction:column;gap:4px}
+.ttag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.8px;padding:1px 6px;border-radius:5px;background:#9085e9;color:#fff;vertical-align:1px}
+.testrow td{color:var(--text-muted)}
+.dacts{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.dmsg{font-size:12.5px;color:var(--text-secondary)}
+.bestrow td{background:color-mix(in srgb,var(--warning) 14%,transparent)}
+.besttag{font-size:11px;font-weight:700;padding:1px 7px;border-radius:6px;background:var(--warning);color:#1b1108;margin-left:4px}
+.bestbox{margin:0 0 10px;padding:9px 12px;border-radius:10px;background:color-mix(in srgb,var(--warning) 16%,var(--surface-1));border:1px solid color-mix(in srgb,var(--warning) 55%,transparent);font-size:13.5px}
+.bestbox.none{background:var(--surface-2);border-color:var(--line);color:var(--text-muted)}
+.qgrid div{display:grid;grid-template-columns:1fr 60px 52px;gap:8px;font-size:12.5px;padding:5px 8px;border-radius:7px;background:var(--surface-2)}
+.qgrid .ok{color:var(--good-text);font-weight:700}.qgrid .no{color:var(--critical);font-weight:700}
+/* screens */
+.center{min-height:100vh;display:grid;place-items:center;padding:20px}
+.login{width:min(400px,92vw);display:flex;flex-direction:column;gap:12px}
+.login h1{margin:0;font-family:var(--disp);font-weight:400;font-size:42px;letter-spacing:1.5px;color:var(--brand)}
+.login label{display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:var(--text-secondary)}
+.login input{border:1px solid var(--line);background:var(--surface-1);border-radius:10px;padding:11px 12px;font-size:15px}
+.err{color:var(--critical);min-height:18px;font-size:13px}
+.setup{width:min(640px,94vw);line-height:1.6}
+.setup code{font-family:var(--mono);background:var(--surface-2);padding:1px 6px;border-radius:5px}
+.setting{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text-secondary)}
+.setting input{width:64px}
+@media (max-width:1100px){.tiles{grid-template-columns:repeat(3,1fr)}.grid2{grid-template-columns:1fr}}
+@media (max-width:640px){.wrap{padding:12px 16px 30px}.tiles{grid-template-columns:repeat(2,1fr)}.qrow{grid-template-columns:120px 1fr 70px}.lrow{grid-template-columns:1fr 1fr}.tbar input[type=search]{min-width:0;flex:1}.tablewrap{overflow-x:auto}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="tip" id="tip"></div>
+<script>
+(function () {
+  const app = document.getElementById('app'), tip = document.getElementById('tip');
+  const C = window.ESCAPE_DB || {}, ROOMS = window.ESCAPE_ROOMS || [];
+  const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const fmt = s => s == null ? '—' : `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  const ago = t => { if (!t) return '—'; const s = Math.max(0, (Date.now() - new Date(t)) / 1000); return s < 60 ? 'just now' : s < 3600 ? Math.floor(s / 60) + ' min ago' : s < 86400 ? Math.floor(s / 3600) + ' h ago' : new Date(t).toLocaleDateString(); };
+  const LIVE_SEC = 60;
+
+  if (!C.url || /YOUR[-_]/i.test(C.url + C.anonKey)) {
+    app.innerHTML = `<div class="center"><div class="card setup"><h2>Connect the database first</h2>
+      <ol><li>Run <code>escape rooms/database/schema.sql</code> in Supabase → SQL Editor.</li>
+      <li>Put the Project URL and anon key in <code>escape rooms/shared/config.js</code>.</li>
+      <li>Create your login in Supabase → Authentication → Users, and add the email to <code>dashboard_admins</code> (last lines of schema.sql).</li></ol>
+      <p>Then reload this page.</p></div></div>`;
+    return;
+  }
+  const sb = supabase.createClient(C.url, C.anonKey);
+  const S = { room: ROOMS[0] && ROOMS[0].id, content: {}, summary: [], live: [], stats: [], feed: [], max: 10, sort: { key: 'last_seen', asc: false }, q: '', showTests: false, seenFeed: new Set(), channel: null, poll: null, updated: null };
+
+  /* ---------------- login ---------------- */
+  async function boot() {
+    const { data } = await sb.auth.getSession();
+    if (data.session) return start(); else login();
+  }
+  function login(msg) {
+    app.innerHTML = `<div class="center"><form class="card login" id="lf">
+      <h1>Escape Rooms</h1><div class="sub" style="color:var(--text-muted)">Live progress dashboard · instructor sign in</div>
+      <label>Email<input id="le" type="email" required autocomplete="username"></label>
+      <label>Password<input id="lp" type="password" required autocomplete="current-password"></label>
+      <div class="err" id="lerr">${esc(msg || '')}</div>
+      <button class="btn primary" id="lgo">Sign in</button></form></div>`;
+    document.getElementById('lf').onsubmit = async e => {
+      e.preventDefault();
+      const b = document.getElementById('lgo'); b.disabled = true; b.textContent = 'Signing in…';
+      const { error } = await sb.auth.signInWithPassword({ email: document.getElementById('le').value.trim(), password: document.getElementById('lp').value });
+      if (error) { document.getElementById('lerr').textContent = error.message; b.disabled = false; b.textContent = 'Sign in'; return; }
+      start();
+    };
+  }
+  async function start() {
+    const { data: isAdmin, error } = await sb.rpc('is_dashboard_admin');
+    if (error || !isAdmin) { await sb.auth.signOut(); return login(error ? error.message : 'This login is not a dashboard admin. Add the email to dashboard_admins in Supabase.'); }
+    shell(); await loadRoom(); subscribe();
+    S.poll = setInterval(refresh, 15000);
+    setInterval(() => { renderLive(); stamp(); }, 5000);
+  }
+
+  /* ---------------- layout ---------------- */
+  function shell() {
+    app.innerHTML = `<div class="wrap">
+      <header>
+        <div><h1>Escape Rooms · Live Progress</h1><div class="sub" id="roomSub"></div></div>
+        <div class="grow"></div>
+        <select id="roomSel" aria-label="Room">${ROOMS.map(r => `<option value="${esc(r.id)}">${esc(r.title)} · ${esc(r.session)}</option>`).join('')}</select>
+        <span class="live" id="live"><i></i><span>Connecting…</span></span>
+        <button class="btn" id="csv">Export CSV</button>
+        <button class="btn" id="out">Sign out</button>
+      </header>
+      <section class="tiles" id="tiles"></section>
+      <section class="grid2">
+        <div class="card"><h2>Playing now</h2><p class="hint">Students active in the last minute · progress through the locks</p><div id="liveList"></div></div>
+        <div class="card"><h2>Live answers</h2><p class="hint">Every answer as it happens</p><div class="feed" id="feed"></div></div>
+      </section>
+      <section class="grid2">
+        <div class="card"><h2>Question difficulty</h2><p class="hint">Share of students right on the first try · in lock order · dashed line = 50%</p><div class="qchart" id="qchart"></div></div>
+        <div class="card"><h2>Best first-try scores</h2><p class="hint">Students by their best escaped score</p><div id="hist"></div>
+          <div style="margin-top:16px" class="setting">Attempts allowed per student in this room <input type="number" id="maxAtt" min="1" max="100"> <button class="btn" id="saveMax">Save</button> <span id="maxMsg"></span></div></div>
+      </section>
+      <section class="card">
+        <div class="tbar"><h2 style="margin:0">Students</h2><div class="grow"></div><input type="search" id="search" placeholder="Search name, roll number or user ID"><label class="setting"><input type="checkbox" id="showTests" style="width:auto"> Show test accounts</label></div>
+        <div class="tablewrap"><table><thead><tr>
+          <th data-k="name">Name</th><th data-k="roll_no">Roll no.</th><th data-k="user_id">User ID</th><th data-k="attempts_used">Attempts</th>
+          <th data-k="escapes">Escapes</th><th data-k="best_score">Best score</th><th data-k="best_time">Best time</th><th data-k="last_seen" class="sorted">Last played</th><th data-k="state">Status</th>
+        </tr></thead><tbody id="tbody"></tbody></table></div>
+      </section>
+    </div>
+    <aside class="drawer" id="drawer"><header><div style="display:flex;align-items:center;gap:10px"><div class="grow"><b id="dName" style="font-size:17px"></b><div class="sub" id="dSub"></div></div><button class="btn" id="dClose">Close</button></div></header><div class="body" id="dBody"></div></aside>`;
+    const $ = id => document.getElementById(id);
+    $('roomSel').value = S.room;
+    $('roomSel').onchange = async e => { S.room = e.target.value; await loadRoom(); subscribe(); };
+    $('out').onclick = async () => { await sb.auth.signOut(); location.reload(); };
+    $('csv').onclick = exportCsv;
+    $('search').oninput = e => { S.q = e.target.value.toLowerCase(); renderTable(); };
+    $('showTests').onchange = e => { S.showTests = e.target.checked; render(); };
+    $('dClose').onclick = () => $('drawer').classList.remove('on');
+    $('saveMax').onclick = saveMax;
+    document.querySelectorAll('th[data-k]').forEach(th => th.onclick = () => {
+      const k = th.dataset.k; S.sort = { key: k, asc: S.sort.key === k ? !S.sort.asc : k === 'name' || k === 'roll_no' || k === 'user_id' };
+      document.querySelectorAll('th').forEach(x => x.classList.remove('sorted', 'asc'));
+      th.classList.add('sorted'); if (S.sort.asc) th.classList.add('asc');
+      renderTable();
+    });
+  }
+
+  /* ---------------- room content (lock names, question order) ---------------- */
+  function loadContent(room) {
+    if (S.content[room]) return Promise.resolve(S.content[room]);
+    const r = ROOMS.find(x => x.id === room);
+    return new Promise(res => {
+      const prev = window.ROOM, sc = document.createElement('script');
+      sc.src = r.content;
+      sc.onload = () => { S.content[room] = window.ROOM; window.ROOM = prev; res(S.content[room]); };
+      sc.onerror = () => res(null);
+      document.head.appendChild(sc);
+    });
+  }
+  const objName = id => { const c = S.content[S.room]; const o = c && c.objects.find(x => x.id === id); return o ? o.name : id; };
+  const totalQ = () => { const c = S.content[S.room]; return c ? c.objects.reduce((n, o) => n + o.q.length, 0) : 20; };
+
+  async function loadRoom() {
+    await loadContent(S.room);
+    const r = ROOMS.find(x => x.id === S.room);
+    document.getElementById('roomSub').textContent = `${r.title} · ${r.session}`;
+    S.seenFeed = new Set();
+    await refresh();
+  }
+
+  /* ---------------- data ---------------- */
+  let busy = false, again = false;
+  async function refresh() {
+    if (busy) { again = true; return; }
+    busy = true;
+    try {
+      const since = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const [sum, live, stats, feed, set] = await Promise.all([
+        sb.from('student_summary').select('*').eq('room', S.room),
+        sb.from('runs').select('id,user_id,attempt_no,score,total,locks_opened,locks_total,current_lock,elapsed_sec,last_seen,started_at').eq('room', S.room).eq('status', 'playing').gte('last_seen', since).order('last_seen', { ascending: false }),
+        sb.from('question_stats').select('*').eq('room', S.room),
+        sb.from('answers').select('id,user_id,object_id,question_idx,question,correct,first_try,try_no,created_at').eq('room', S.room).order('created_at', { ascending: false }).limit(40),
+        sb.from('room_settings').select('max_attempts').eq('room', S.room).maybeSingle()
+      ]);
+      const err = [sum, live, stats, feed].find(x => x.error);
+      if (err) throw err.error;
+      S.summary = sum.data || []; S.live = live.data || []; S.stats = stats.data || []; S.feed = feed.data || [];
+      S.max = (set.data && set.data.max_attempts) || 10;
+      S.updated = new Date();
+      render();
+    } catch (e) {
+      const l = document.getElementById('live'); if (l) { l.classList.remove('on'); l.lastChild.textContent = 'Reconnecting… ' + (e.message || ''); }
+    } finally { busy = false; if (again) { again = false; refresh(); } }
+  }
+  let t = null;
+  const soon = () => { clearTimeout(t); t = setTimeout(refresh, 700); };
+  function subscribe() {
+    if (S.channel) sb.removeChannel(S.channel);
+    S.channel = sb.channel('room-' + S.room)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'runs', filter: `room=eq.${S.room}` }, soon)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'answers', filter: `room=eq.${S.room}` }, soon)
+      .subscribe(st => { S.rt = st === 'SUBSCRIBED'; stamp(); });
+  }
+  function stamp() {
+    const l = document.getElementById('live'); if (!l || !S.updated) return;
+    l.classList.toggle('on', true);
+    l.lastChild.textContent = `${S.rt ? 'Live' : 'Auto-refresh 15 s'} · updated ${S.updated.toLocaleTimeString()}`;
+  }
+
+  /* ---------------- render ---------------- */
+  /* test accounts never count in the numbers; the table and live lists show them only when the box is ticked */
+  const isTest = id => { const s = S.summary.find(x => x.user_id === id); return !!(s && s.is_test); };
+  const real = () => S.summary.filter(s => !s.is_test);
+  const visible = id => S.showTests || !isTest(id);
+  const nameOf = id => { const s = S.summary.find(x => x.user_id === id); return s ? s.name : id; };
+  const isLive = r => (Date.now() - new Date(r.last_seen)) / 1000 < LIVE_SEC;
+  function state(s) {
+    if (S.live.some(r => r.user_id === s.user_id && isLive(r))) return ['play', 'Playing now'];
+    if (!s.is_test && Number(s.attempts_used) >= S.max) return ['out', 'No attempts left'];
+    if (Number(s.escapes) > 0) return ['esc', 'Escaped'];
+    return ['wait', 'Not escaped yet'];
+  }
+  function render() { renderTiles(); renderLive(); renderFeed(); renderQuestions(); renderHist(); renderTable(); stamp(); document.getElementById('maxAtt').value = S.max; }
+
+  function renderTiles() {
+    const sm = real(), n = sm.length, tests = S.summary.length - n, plays = sm.reduce((a, s) => a + Number(s.attempts_used), 0), esc_ = sm.reduce((a, s) => a + Number(s.escapes), 0);
+    const bests = sm.filter(s => s.best_score != null), times = sm.filter(s => s.best_time != null);
+    const avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+    const avgScore = avg(bests.map(s => s.best_score)), avgTime = avg(times.map(s => s.best_time));
+    const liveN = new Set(S.live.filter(isLive).filter(r => !isTest(r.user_id)).map(r => r.user_id)).size;
+    const tiles = [
+      ['Students played', n, tests ? `${tests} test account${tests > 1 ? 's' : ''} not counted` : 'signed in and entered'],
+      ['Plays', plays, n ? (plays / n).toFixed(1) + ' per student' : '—'],
+      ['Escaped', n ? Math.round(100 * sm.filter(s => s.escapes > 0).length / n) + '%' : '—', `${esc_} escapes in total`],
+      ['Avg best score', avgScore == null ? '—' : avgScore.toFixed(1), `out of ${totalQ()} first-try`],
+      ['Avg best time', avgTime == null ? '—' : fmt(Math.round(avgTime)), 'escaped runs'],
+      ['Playing now', liveN, 'active in the last minute']
+    ];
+    document.getElementById('tiles').innerHTML = tiles.map(([k, v, s]) => `<div class="tile"><small>${k}</small><b>${esc(v)}</b><span>${esc(s)}</span></div>`).join('');
+  }
+  function renderLive() {
+    const el = document.getElementById('liveList'); if (!el) return;
+    const rows = S.live.filter(isLive).filter(r => visible(r.user_id));
+    el.innerHTML = rows.length ? `<div class="live-list">${rows.map(r => {
+      const s = S.summary.find(x => x.user_id === r.user_id) || {}, pct = r.locks_total ? 100 * r.locks_opened / r.locks_total : 0;
+      return `<div class="lrow"><div class="who"><b>${esc(s.name || r.user_id)}</b><span>${esc(s.roll_no || '')} · attempt ${r.attempt_no}</span></div>
+        <div><div class="prog" title="${r.locks_opened} of ${r.locks_total} locks"><i style="width:${pct}%"></i></div><div class="lock">${r.locks_opened}/${r.locks_total} locks · at ${esc(objName(r.current_lock) || '—')}</div></div>
+        <div class="num" title="first-try score">${r.score}/${r.total}</div><div class="num" title="time">${fmt(r.elapsed_sec)}</div></div>`;
+    }).join('')}</div>` : '<div class="empty">Nobody is playing right now.</div>';
+  }
+  function renderFeed() {
+    const el = document.getElementById('feed');
+    const feed = S.feed.filter(a => visible(a.user_id));
+    el.innerHTML = feed.length ? feed.map(a => {
+      const fresh = !S.seenFeed.has(a.id) && S.seenFeed.size; S.seenFeed.add(a.id);
+      return `<div class="${fresh ? 'new' : ''}"><span class="${a.correct ? 'ok' : 'no'}">${a.correct ? '✓' : '✗'}</span>
+        <span><b>${esc(nameOf(a.user_id))}</b>${isTest(a.user_id) ? ' <span class="ttag">TEST</span>' : ''} · ${esc(objName(a.object_id))} Q${a.question_idx + 1} · ${a.first_try ? 'first try' : 'try ' + a.try_no}</span><time>${ago(a.created_at)}</time></div>`;
+    }).join('') : '<div class="empty">No answers yet.</div>';
+    if (!S.seenFeed.size) S.feed.forEach(a => S.seenFeed.add(a.id));
+  }
+  function questionList() {
+    const c = S.content[S.room], out = [];
+    if (c) c.objects.forEach(o => o.q.forEach((q, i) => out.push({ object_id: o.id, idx: i, label: `${o.name} · Q${i + 1}`, text: q.p.replace(/`/g, '') })));
+    S.stats.forEach(st => { if (!out.some(x => x.object_id === st.object_id && x.idx === st.question_idx)) out.push({ object_id: st.object_id, idx: st.question_idx, label: `${st.object_id} · Q${st.question_idx + 1}`, text: st.question }); });
+    return out.map(x => Object.assign(x, { st: S.stats.find(st => st.object_id === x.object_id && st.question_idx === x.idx) }));
+  }
+  function renderQuestions() {
+    const el = document.getElementById('qchart'), qs = questionList();
+    if (!S.stats.length) { el.innerHTML = '<div class="empty">No answers yet.</div>'; return; }
+    el.innerHTML = qs.map((x, k) => {
+      const p = x.st && x.st.first_try_pct != null ? Number(x.st.first_try_pct) : null;
+      return `<div class="qrow" data-k="${k}"><span class="lbl">${esc(x.label)}</span><span class="bar">${p == null ? '' : `<i style="width:${p}%"></i>`}</span>
+        <span class="val">${p == null ? '<span style="color:var(--text-muted)">no data</span>' : `${p < 50 ? '<span class="hard">▲ HARD</span>' : ''}${p}%`}</span></div>`;
+    }).join('');
+    el.querySelectorAll('.qrow').forEach(r => {
+      const x = qs[+r.dataset.k];
+      r.onmousemove = e => showTip(e, `<b>${esc(x.label)}</b>${esc(x.text || '')}<br>${x.st ? `${x.st.first_try_correct} of ${x.st.first_tries} right on the first try · avg ${x.st.avg_tries_to_solve ?? '—'} tries to solve` : 'No answers yet'}`);
+      r.onmouseleave = hideTip;
+    });
+  }
+  function renderHist() {
+    const el = document.getElementById('hist'), T = totalQ(), counts = new Array(T + 1).fill(0);
+    real().forEach(s => { if (s.best_score != null) counts[Math.min(T, s.best_score)]++; });
+    const max = Math.max(1, ...counts), any = counts.some(Boolean);
+    if (!any) { el.innerHTML = '<div class="empty">No escapes yet.</div>'; return; }
+    el.innerHTML = `<div class="hist">${counts.map((c, k) => `<div class="col" data-k="${k}" data-c="${c}"><i style="height:${100 * c / max}%"></i></div>`).join('')}</div>
+      <div class="histx">${counts.map((_, k) => `<span>${k % 5 === 0 || k === T ? k : ''}</span>`).join('')}</div>`;
+    el.querySelectorAll('.col').forEach(c => { c.onmousemove = e => showTip(e, `<b>Best score ${c.dataset.k}/${T}</b>${c.dataset.c} student${c.dataset.c === '1' ? '' : 's'}`); c.onmouseleave = hideTip; });
+  }
+  function rowsFiltered() {
+    const k = S.sort.key, dir = S.sort.asc ? 1 : -1;
+    return S.summary.filter(s => S.showTests || !s.is_test).filter(s => !S.q || [s.name, s.roll_no, s.user_id].some(v => String(v).toLowerCase().includes(S.q)))
+      .map(s => Object.assign({}, s, { state: state(s)[1] }))
+      .sort((a, b) => { const x = a[k], y = b[k]; if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1; return (typeof x === 'number' || !isNaN(x) && !isNaN(y) && k !== 'roll_no' && k !== 'user_id' ? Number(x) - Number(y) : String(x).localeCompare(String(y))) * dir; });
+  }
+  function renderTable() {
+    const rows = rowsFiltered(), T = totalQ();
+    document.getElementById('tbody').innerHTML = rows.length ? rows.map(s => {
+      const [cls, label] = state(s), used = Number(s.attempts_used);
+      return `<tr data-u="${esc(s.user_id)}" class="${s.is_test ? 'testrow' : ''}"><td><b>${esc(s.name)}</b>${s.is_test ? ' <span class="ttag">TEST</span>' : ''}</td><td>${esc(s.roll_no)}</td><td>${esc(s.user_id)}</td>
+        <td class="num" style="text-align:left">${s.is_test ? used + ' · no limit' : `${used}/${S.max}`}<span class="dots" ${s.is_test ? 'hidden' : ''}>${Array.from({ length: Math.min(S.max, 20) }, (_, i) => `<i class="${i < used ? 'u' : ''}"></i>`).join('')}</span></td>
+        <td class="num">${s.escapes}</td><td class="num">${s.best_score == null ? '—' : s.best_score + '/' + T}</td><td class="num">${fmt(s.best_time)}</td>
+        <td>${ago(s.last_seen)}</td><td><span class="status st-${cls}"><i></i>${label}</span></td></tr>`;
+    }).join('') : `<tr><td colspan="9"><div class="empty">${S.summary.length ? 'No student matches the search.' : 'No student has played this room yet.'}</div></td></tr>`;
+    document.querySelectorAll('#tbody tr[data-u]').forEach(tr => tr.onclick = () => openStudent(tr.dataset.u));
+  }
+
+  /* ---------------- one student ---------------- */
+  async function openStudent(uid) {
+    const s = S.summary.find(x => x.user_id === uid), $ = id => document.getElementById(id);
+    $('dName').textContent = s.name; $('dSub').textContent = `${s.roll_no} · ${s.user_id}`;
+    $('dBody').innerHTML = '<div class="empty">Loading…</div>'; $('drawer').classList.add('on');
+    const [runs, ans] = await Promise.all([
+      sb.from('runs').select('*').eq('room', S.room).eq('user_id', uid).order('attempt_no'),
+      sb.from('answers').select('run_id,object_id,question_idx,correct,first_try,try_no').eq('room', S.room).eq('user_id', uid)
+    ]);
+    const R = runs.data || [], A = ans.data || [];
+    const pick = R.filter(r => r.status === 'escaped').sort((a, b) => b.score - a.score || a.elapsed_sec - b.elapsed_sec)[0] || R[R.length - 1];
+    const qs = questionList();
+    $('dBody').innerHTML = `
+      <div class="dacts">${s.is_test
+        ? `<span class="ttag">TEST ACCOUNT</span><button class="btn" id="dReset">Reset test data</button><button class="btn" id="dMark">Not a test account</button>`
+        : `<button class="btn" id="dMark">Mark as test account</button>`}<span id="dMsg" class="dmsg"></span></div>
+      <h3>ATTEMPTS · ${s.is_test ? R.length + ' (no limit)' : `${R.length} of ${S.max} used`}</h3>
+      ${pick && pick.status === 'escaped' ? `<div class="bestbox">★ Best attempt: <b>#${pick.attempt_no}</b> · <b>${pick.score}/${pick.total}</b> first-try · <b>${fmt(pick.elapsed_sec)}</b></div>` : '<div class="bestbox none">No escape yet, so no best score.</div>'}
+      <table class="runs"><thead><tr><th>#</th><th>Status</th><th>Score</th><th>Locks</th><th>Time</th><th>Started</th></tr></thead><tbody>
+      ${R.map(r => `<tr class="${pick && r.id === pick.id && r.status === 'escaped' ? 'bestrow' : ''}"><td>${r.attempt_no}</td><td><span class="status st-${r.status === 'escaped' ? 'esc' : isLive(r) ? 'play' : 'wait'}"><i></i>${r.status === 'escaped' ? 'Escaped' : isLive(r) ? 'Playing now' : 'Left early'}</span>${pick && r.id === pick.id && r.status === 'escaped' ? ' <span class="besttag">★ Best</span>' : ''}</td>
+        <td class="num">${r.score}/${r.total}</td><td class="num">${r.locks_opened}/${r.locks_total}</td><td class="num">${fmt(r.elapsed_sec)}</td><td>${new Date(r.started_at).toLocaleString()}</td></tr>`).join('')}
+      </tbody></table>
+      ${pick ? `<h3>FIRST-TRY RESULTS · attempt ${pick.attempt_no}${pick.status === 'escaped' ? ' (best escape)' : ' (latest)'}</h3>
+      <div class="qgrid">${qs.map(x => { const a = A.filter(y => y.run_id === pick.id && y.object_id === x.object_id && y.question_idx === x.idx); const f = a.find(y => y.first_try), solved = a.find(y => y.correct);
+        return `<div><span>${esc(x.label)}</span><span class="${f ? (f.correct ? 'ok' : 'no') : ''}">${f ? (f.correct ? '✓ first' : '✗ first') : '—'}</span><span class="num">${solved ? solved.try_no + ' tr' + (solved.try_no === 1 ? 'y' : 'ies') : '—'}</span></div>`; }).join('')}</div>` : ''}`;
+    $('dMark').onclick = async () => {
+      if (!s.is_test && !confirm(`Mark ${s.name} as a test account? Their runs stop counting in the numbers and they get no attempt limit.`)) return;
+      const { error } = await sb.rpc('set_test_account', { p_user_id: uid, p_is_test: !s.is_test });
+      if (error) { $('dMsg').textContent = error.message; return; }
+      await refresh(); openStudent(uid);
+    };
+    if ($('dReset')) $('dReset').onclick = async () => {
+      if (!confirm(`Delete all ${R.length} runs of the test account ${s.name}? Real students are never affected.`)) return;
+      const { data: n, error } = await sb.rpc('reset_test_account', { p_user_id: uid });
+      if (error) { $('dMsg').textContent = error.message; return; }
+      await refresh(); openStudent(uid); $('dMsg').textContent = `${n} runs removed ✓`;
+    };
+  }
+
+  /* ---------------- settings, export, tooltip ---------------- */
+  async function saveMax() {
+    const v = parseInt(document.getElementById('maxAtt').value, 10), m = document.getElementById('maxMsg');
+    if (!(v > 0)) { m.textContent = 'Enter a number above 0.'; return; }
+    const { error } = await sb.from('room_settings').update({ max_attempts: v }).eq('room', S.room);
+    m.textContent = error ? error.message : 'Saved ✓'; if (!error) { S.max = v; renderTable(); }
+  }
+  function exportCsv() {
+    const T = totalQ(), cols = ['name', 'roll_no', 'user_id', 'attempts_used', 'max_attempts', 'escapes', 'best_score', 'total', 'best_time', 'last_played', 'status'];
+    const rows = rowsFiltered().map(s => [s.name, s.roll_no, s.user_id, s.attempts_used, S.max, s.escapes, s.best_score ?? '', T, s.best_time == null ? '' : fmt(s.best_time), s.last_seen, s.state]);
+    const csv = [cols, ...rows].map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `escape-room-${S.room}-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+  }
+  function showTip(e, html) { tip.innerHTML = html; tip.style.display = 'block'; const w = tip.offsetWidth, h = tip.offsetHeight; tip.style.left = Math.min(innerWidth - w - 10, e.clientX + 14) + 'px'; tip.style.top = Math.min(innerHeight - h - 10, e.clientY + 14) + 'px'; }
+  function hideTip() { tip.style.display = 'none'; }
+
+  boot();
+})();
+</script>
+</body>
+</html>

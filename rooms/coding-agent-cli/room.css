@@ -1,0 +1,265 @@
+/* Lost in Orbit: space-station theme on top of shared/room.css, plus the motion of every object in scene.js. */
+:root{
+  --bg:#060a14;--panel:#0f1830;--panel2:#16213d;--line:#26355a;--ink:#e8f0ff;--mute:#91a4c8;
+  --amber:#ffcf5a;--teal:#3fd6ff;--coral:#ff7a66;--lilac:#b58cff;--lime:#7dff9a;--red:#ff4a4a;
+}
+body{background:var(--bg)}
+code{color:var(--teal);background:rgba(63,214,255,.12)}
+
+/* ---------- theme: cool navy panels, neon cyan + signal yellow ---------- */
+#hud{background:linear-gradient(#0f1830,#0a1122);border-bottom:1px solid var(--line);box-shadow:0 1px 0 rgba(63,214,255,.15)}
+.brand b{color:var(--teal);text-shadow:0 0 18px rgba(63,214,255,.45)}
+.stat{background:#070c18;border-color:var(--line)}
+.tools button{background:#121c35;border-color:var(--line)}
+.tools button:hover{border-color:var(--teal)}
+.tools .count{color:#06101f}
+#stage{background:#03050b}
+#panel{background:linear-gradient(180deg,#111b34,#0a1124);border-color:#2f4370;box-shadow:0 30px 80px rgba(0,0,0,.7),0 0 0 1px rgba(63,214,255,.08),inset 0 1px 0 rgba(255,255,255,.06)}
+.ph .lockico{background:#16213d;border-color:#2f4370}
+.ph .lockico svg{stroke:var(--teal)}
+.ph .goal{color:var(--amber)}
+.tumblers i{background:#16213d;border-color:#2f4370}
+.btn{color:#04121f;background:linear-gradient(#7de8ff,#22b8e8);box-shadow:0 4px 0 #0d6f93,0 8px 22px rgba(63,214,255,.28)}
+.btn:active{box-shadow:0 2px 0 #0d6f93}
+.btn.ghost{background:transparent;color:var(--mute);border:1px solid var(--line);box-shadow:none}
+pre.code{background:#050912;border-color:var(--line);color:#e3ecff}
+.kw{color:#ff8fc8}.st{color:#ffd77a}.fn{color:#6fe3ff}.nu{color:#ffb38a}.bi{color:#c3a2ff}
+.opt,.tfrow,.chip,.plug,.sock,.swlist span,.fnode{background:var(--panel2);border-color:#2f4370}
+.chip:hover{border-color:var(--teal)}
+.tok{background:color-mix(in srgb,var(--k) 16%,#0f1830)}
+.tok:hover{background:color-mix(in srgb,var(--k) 30%,#0f1830)}
+.blank.full,.cslot.full,.dval.on{color:#1d1400}
+.swcard{background:linear-gradient(160deg,#1b2848,#0f1830);border-color:#3a5288}
+.dialsvg .ring{stroke:#2f4370}
+.dval{background:#0f1830;border-color:#2f4370}
+.dttarget{background:#0f1830;border-color:#3a5288}
+.oslot,.slot{border-color:#3a5288}
+#inv{background:linear-gradient(#0a1122,#0f1830);border-top-color:var(--line)}
+.slotbox{background:radial-gradient(circle at 50% 35%,#1a2748,#0a1020);border-color:var(--line)}
+.slotbox.has{border-color:#3a5288}
+.slotbox.sel{border-color:var(--amber)}
+.flyitem{background:#16213d}
+.ov{background:rgba(2,4,10,.76)}
+#signOv,#blockOv,#howOv,#intro{background:radial-gradient(ellipse at 50% 20%,rgba(30,60,120,.55),rgba(2,4,10,.97) 70%)}
+#result{background:radial-gradient(ellipse at 50% 20%,rgba(120,210,255,.25),rgba(2,4,10,.95) 60%)}
+.signbox h1,.introbox h1,.howhead h2{color:var(--teal);text-shadow:0 0 34px rgba(63,214,255,.45)}
+.signbox input{background:#0a1020;border-color:#2f4370}
+.signbox input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(63,214,255,.2)}
+.tagline,.story{color:#c9d8f5}
+.vidwrap{border-color:#2f4370}
+.vidcap{background:rgba(4,8,18,.92);border-color:#2f4370}
+.steps li{background:rgba(15,24,48,.9);border-color:var(--line)}
+.steps li i{background:#16213d}
+.steps li.on{border-color:var(--teal);background:rgba(63,214,255,.12)}
+.steps li.on i{background:var(--teal);color:#04121f}
+.card,.bigs div,.revisit li{background:rgba(12,20,40,.92)}
+.blockbox .lockbig{background:#16213d;border-color:#2f4370}
+#say{background:rgba(6,10,22,.93);border-color:#2f4370}
+#say::before{background:var(--teal);box-shadow:0 0 10px var(--teal)}
+/* clue note = a holo card instead of paper */
+.note{background:linear-gradient(160deg,#122046,#0a1226);color:var(--ink);border:1px solid #3a5aa0;border-radius:16px;transform:none;font-family:var(--sans);box-shadow:0 30px 70px rgba(0,0,0,.7),0 0 40px -10px rgba(63,214,255,.5)}
+.note::before{background:linear-gradient(90deg,transparent,var(--teal),transparent);height:3px;top:0;width:60%;margin-left:-30%;transform:none}
+.note .item{color:var(--teal)}
+.note .item big{color:#fff}
+.note .item div{background:#060a14;box-shadow:0 0 0 3px var(--amber)}
+.note .tapon{color:var(--mute)}
+.journal{background:#0c1530;color:var(--ink);font-family:var(--sans);border:1px solid #3a5aa0}
+.journal .empty{color:var(--mute)}
+
+/* ---------- scene: idle life ---------- */
+.ceil{animation:ceil 4s ease-in-out infinite}
+@keyframes ceil{50%{opacity:.6}}
+.sat{animation:sat 40s linear infinite}
+@keyframes sat{from{transform:translate(520px,120px)}to{transform:translate(1080px,190px)}}
+.clocktxt{animation:blinkred 2s steps(1) infinite}
+.floorline{animation:ceil 3s ease-in-out infinite}
+
+/* power lever */
+.lever .tog{transition:transform .2s cubic-bezier(.3,1.6,.5,1)}
+.lever.on .tog{transform:translateY(46px)}
+.lever.on .tog rect:first-child{fill:#3fd6ff}
+
+/* locker: door swings open on its hinge, padlock drops */
+.locker .ldoor{transform-box:fill-box;transform-origin:0 50%;transition:transform 1s cubic-bezier(.3,1.3,.5,1) .2s}
+.locker.done .ldoor{transform:scaleX(.1) skewY(-6deg)}
+.locker .pl{transition:transform .5s ease-in,opacity .5s}
+.locker.done .pl{transform:translateY(240px);opacity:0}
+
+/* console: fuse slides in, screens boot, text appears */
+.console .ufuse{opacity:0}
+.console.powered .ufuse{animation:fusein .8s cubic-bezier(.4,0,.3,1) forwards}
+@keyframes fusein{0%{opacity:1;transform:translateY(-70px)}100%{opacity:1;transform:none}}
+.console .boot{opacity:0}
+.console.powered .boot{animation:boot 1.4s steps(2) .8s 1 forwards}
+@keyframes boot{0%,99%{opacity:1}100%{opacity:0}}
+.console .scr{transition:fill .5s 1.8s}
+.console.powered .scr{fill:#081428}
+.console .scrtxt{opacity:0;transition:opacity .6s 2.1s}
+.console.powered .scrtxt{opacity:1}
+.console .key{transition:opacity .3s 1s}
+.console.powered .key{opacity:1;animation:keyb 1.6s ease-in-out 1.4s infinite}
+.console.powered .k1,.console.powered .k4,.console.powered .k6{animation-delay:1.9s}
+@keyframes keyb{50%{opacity:.4}}
+
+/* crate: card swipes, reader goes green, lid lifts */
+.crate .ucard{opacity:0}
+.crate.powered .ucard{animation:swipe 1.3s ease-in-out forwards}
+@keyframes swipe{0%{opacity:1;transform:translateY(-40px)}60%{opacity:1;transform:translateY(40px)}100%{opacity:0;transform:translateY(40px)}}
+.crate .rled{transition:fill .2s .8s}
+.crate.powered .rled{fill:#6dff9a}
+.crate .lid{transform-box:fill-box;transform-origin:center;transition:transform .9s cubic-bezier(.3,1.5,.5,1) .3s}
+.crate.done .lid{transform:translateY(-38px);animation:lidfloat 2.6s ease-in-out 1.2s infinite alternate}
+@keyframes lidfloat{from{transform:translateY(-38px) rotate(-3deg)}to{transform:translateY(-50px) rotate(3deg)}}
+
+/* beacon: lens pops on, the bulb and beam turn green */
+.beacon .ulens{opacity:0;transform-box:fill-box;transform-origin:center}
+.beacon.powered .ulens{animation:popin .5s cubic-bezier(.2,1.8,.4,1) forwards}
+@keyframes popin{from{opacity:0;transform:scale(2.2)}to{opacity:1;transform:none}}
+.beacon .bulb{transition:fill .3s .5s}
+.beacon.powered .bulb{fill:#6dff9a}
+.beacon .rays{opacity:0;transform-box:fill-box;transform-origin:center}
+.beacon.powered .rays{animation:beam 1.2s ease-in-out .6s infinite}
+@keyframes beam{0%,100%{opacity:.4;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+
+/* vent: wrench turns, bolts float off one by one, grille falls */
+.vent .uwrench{opacity:0;transform-box:fill-box;transform-origin:50% 100%}
+.vent.powered .uwrench{animation:wturn 2.2s ease-in-out forwards}
+@keyframes wturn{0%{opacity:1}20%{transform:rotate(-30deg)}40%{transform:rotate(10deg)}60%{transform:rotate(-30deg)}80%{opacity:1;transform:rotate(10deg)}100%{opacity:0}}
+.vent .bolt{transform-box:fill-box;transform-origin:center}
+.vent.powered .bolt{animation:boltoff .7s ease-in forwards}
+.vent.powered .b1{animation-delay:.5s}.vent.powered .b2{animation-delay:1s}.vent.powered .b3{animation-delay:1.5s}
+@keyframes boltoff{0%{transform:none}40%{transform:rotate(360deg)}100%{transform:translate(18px,-60px) rotate(720deg);opacity:0}}
+.vent .grille{transform-box:fill-box;transform-origin:50% 100%;transition:transform .7s cubic-bezier(.5,0,.7,1),opacity .7s}
+.vent.done .grille{transform:scaleY(.08);opacity:.4}
+
+/* drone: chip goes in, eyes light, it wakes and hovers */
+.drone .uchip{opacity:0}
+.drone.powered .uchip{animation:chipin 1s ease-in forwards}
+@keyframes chipin{0%{opacity:1;transform:translateY(-60px)}80%{opacity:1;transform:translateY(36px) scale(.5)}100%{opacity:0;transform:translateY(36px) scale(.5)}}
+.drone .eye{transition:fill .3s 1.1s}
+.drone.powered .eye{fill:#3fd6ff;filter:drop-shadow(0 0 6px #3fd6ff)}
+.drone.powered .zz{animation:none;opacity:0;transition:opacity .3s .9s}
+.drone .zz{animation:zz 2s ease-in-out infinite}
+@keyframes zz{50%{transform:translate(6px,-8px);opacity:.5}}
+.drone.done .dbody{animation:hover 2.2s ease-in-out infinite}
+@keyframes hover{0%,100%{transform:translateY(-30px)}50%{transform:translateY(-42px)}}
+.drone.done .thrust{opacity:.8;animation:thr .2s steps(2) infinite}
+@keyframes thr{50%{opacity:.4}}
+.drone .dshadow{transform-box:fill-box;transform-origin:center;transition:transform .8s}
+.drone.done .dshadow{transform:scale(.6)}
+
+/* hull: cutter traces the seam with sparks, the plate falls, the Permission screen shows */
+.hull .ucutter{opacity:0}
+.hull.powered .ucutter{animation:cutmove 2.4s linear forwards}
+@keyframes cutmove{0%{opacity:1;transform:translate(0,0)}25%{transform:translate(146px,0)}50%{transform:translate(146px,136px)}75%{transform:translate(0,136px)}95%{opacity:1;transform:translate(0,0)}100%{opacity:0}}
+.hull .seam{stroke-dasharray:100;stroke-dashoffset:100}
+.hull.powered .seam{animation:seam 2.4s linear forwards}
+@keyframes seam{to{stroke-dashoffset:0}}
+.hull .spark{opacity:0}
+.hull.powered .spark{animation:sparkmv 2.4s linear forwards}
+@keyframes sparkmv{0%{opacity:1;transform:translate(0,0)}25%{transform:translate(146px,0)}50%{transform:translate(146px,136px)}75%{transform:translate(0,136px)}95%{opacity:1;transform:translate(0,0)}100%{opacity:0}}
+.hull .plate{transform-box:fill-box;transform-origin:50% 100%;transition:transform .8s cubic-bezier(.5,0,.8,.6),opacity .8s}
+.hull.done .plate{transform:translateY(150px) rotate(14deg);opacity:0}
+.hull .seam{transition:opacity .3s}
+.hull.done .seam{opacity:0}
+.hull .permscr{opacity:.15}
+.hull.done .permscr{opacity:1;transition:opacity .6s .6s}
+
+/* airlock: cable plugs in, screen turns from LOCKED to ACCESS */
+.airlock .uplug{opacity:0;transform-box:fill-box;transform-origin:center}
+.airlock.powered .uplug{animation:popin .4s cubic-bezier(.2,1.8,.4,1) forwards}
+.airlock .acable{stroke-dasharray:100;stroke-dashoffset:100}
+.airlock.powered .acable{animation:seam .7s ease-out .3s forwards}
+.airlock .a2{opacity:0}
+.airlock.powered .a1{opacity:0;transition:opacity .2s 1.1s}
+.airlock.powered .a2{opacity:1;transition:opacity .2s 1.2s}
+.airlock .ascr{transition:fill .3s 1.1s}
+.airlock.powered .ascr{fill:#0b2a1b}
+
+/* nav: cartridge slides in, the star map spins, course set */
+.nav .ucart{opacity:0}
+.nav.powered .ucart{animation:cartin 1.1s ease-in forwards}
+@keyframes cartin{0%{opacity:1;transform:translateY(-80px)}75%{opacity:1;transform:translateY(14px)}100%{opacity:0;transform:translateY(14px)}}
+.nav .map{opacity:.25;transform-box:fill-box;transform-origin:center}
+.nav.powered .map{opacity:1;animation:spin 3s linear 1s infinite;transition:opacity .4s 1s}
+@keyframes spin{to{transform:rotate(360deg)}}
+.nav .ntxt{opacity:0}
+.nav.done .ntxt{opacity:1;animation:blinkred 1s steps(1) 3}
+.nav .nscr{transition:fill .4s 1s}
+.nav.powered .nscr{fill:#0b1430}
+
+/* escape pod hatch: key turns, leaves slide apart, light floods out */
+.hatch .leaf{transition:transform 1.6s cubic-bezier(.6,0,.2,1)}
+.hatch.open .lf{transform:translateX(-112px)}
+.hatch.open .rt{transform:translateX(112px)}
+.hatch .port{transition:opacity .4s}
+.hatch.open .port,.hatch.open .podtxt,.hatch.open .ukey{opacity:0}
+.hatch .podin{opacity:.9}
+.howhead .tag{letter-spacing:1.6px;white-space:nowrap}
+.hc-answer::after{display:none}
+
+/* ================= 3D depth layer (depth3d.js) ================= */
+#stage{perspective:1400px;perspective-origin:50% 45%;overflow:clip}
+#scene{transform-style:preserve-3d;will-change:transform;transition:filter .6s}
+#scene svg{filter:drop-shadow(0 18px 30px rgba(0,0,0,.45))}
+
+/* floating star dust at three depths */
+.dust3d{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+.dust3d .dl{position:absolute;inset:-4%;transform:translate(calc(var(--px,0) * var(--m) * 1px),calc(var(--py,0) * var(--m) * 1px))}
+.dust3d .dl0{--m:-14}.dust3d .dl1{--m:-30}.dust3d .dl2{--m:-60}
+.dust3d i{position:absolute;border-radius:50%;background:#bfeaff;animation:drift 14s linear infinite}
+.dust3d .dl0 i{width:2px;height:2px;opacity:.35}
+.dust3d .dl1 i{width:3px;height:3px;opacity:.5;box-shadow:0 0 6px #7fdcff}
+.dust3d .dl2 i{width:5px;height:5px;opacity:.55;filter:blur(1.5px);box-shadow:0 0 10px #7fdcff}
+@keyframes drift{0%{transform:translate3d(0,0,0)}50%{transform:translate3d(14px,-22px,0)}100%{transform:translate3d(0,0,0)}}
+
+/* objects lift towards you on hover */
+#scene [data-obj]{transition:transform .35s cubic-bezier(.2,.9,.3,1.3),filter .35s;transform-box:fill-box;transform-origin:50% 100%}
+#scene [data-obj]:not(.done):hover{transform:translateY(-6px) scale(1.035);filter:drop-shadow(0 14px 14px rgba(0,0,0,.55)) drop-shadow(0 0 10px rgba(63,214,255,.45))}
+
+/* lock panel swings in like a hologram door */
+#panel{transform:perspective(1300px) translateX(115%) rotateY(-38deg);transform-origin:100% 50%;transition:transform .7s cubic-bezier(.16,1,.3,1),opacity .5s;opacity:0}
+#panel.on{transform:perspective(1300px) translateX(0) rotateY(0);opacity:1}
+#panel::before{content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;z-index:3;
+  background:linear-gradient(115deg,transparent 30%,rgba(127,220,255,.12) 45%,transparent 60%);background-size:250% 100%;animation:holo 5s linear infinite}
+@keyframes holo{from{background-position:120% 0}to{background-position:-120% 0}}
+
+/* every new question flips up into place */
+#pArea{perspective:1100px}
+#pArea>*{animation:qflip .65s cubic-bezier(.16,1,.3,1) both;transform-origin:50% 0}
+@keyframes qflip{from{opacity:0;transform:rotateX(-55deg) translateZ(-60px)}to{opacity:1;transform:none}}
+#pFb.good{animation:fbpop .55s cubic-bezier(.2,1.4,.4,1)}
+@keyframes fbpop{0%{transform:perspective(600px) rotateX(70deg);opacity:0}100%{transform:none;opacity:1}}
+
+/* tumblers turn like real 3D pins */
+.tumblers{perspective:300px}
+.tumblers i{transform-style:preserve-3d}
+.tumblers i.open{transform:translateY(-5px) rotateY(360deg);transition:transform .8s cubic-bezier(.2,.9,.3,1.2),background .3s}
+
+/* inventory: glossy 3D bays, items spin in */
+#inv{perspective:700px}
+.slotbox{transform:rotateX(14deg);transform-style:preserve-3d;box-shadow:0 8px 0 #050912,0 12px 18px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.08)}
+.slotbox.has:hover{transform:rotateX(0) translateY(-3px)}
+.slotbox.sel{transform:rotateX(0) translateY(-8px) translateZ(20px)}
+.slotbox.has svg{animation:itemspin .9s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes itemspin{from{transform:rotateY(-540deg) scale(.4)}to{transform:none}}
+.flyitem{animation:flyspin 1s linear infinite}
+@keyframes flyspin{to{transform:rotateY(360deg)}}
+
+/* drag chips tilt toward you */
+.chip,.tok,.plug{transition:transform .2s}
+.chip:hover,.tok:hover,.plug:hover{transform:perspective(500px) translateZ(18px) rotateX(8deg)}
+
+/* escape: the camera flies through the hatch */
+#stage.escape3d #scene{transition:transform 2.2s cubic-bezier(.6,0,.2,1),filter 2.2s;transform:translateZ(900px) !important;filter:brightness(2.2) blur(2px)}
+#stage.escape3d .dust3d i{animation:warp .9s linear infinite}
+@keyframes warp{from{transform:scale(1)}to{transform:scale(1,6) translateY(-40px);opacity:0}}
+
+@media (prefers-reduced-motion: reduce){
+  #panel,#pArea>*,.slotbox.has svg,.flyitem,.dust3d i{animation:none!important;transition:none!important}
+}
+
+/* a terminal with several slots: tighter chips so all lines fit one view */
+.term:has(.tl:nth-child(4)) + .tokens{gap:7px}
+.term:has(.tl:nth-child(4)) + .tokens .tok{font-size:12.5px;padding:6px 10px}
+.term:has(.tl:nth-child(4)) .tl{line-height:1.55}

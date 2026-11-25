@@ -1,0 +1,8 @@
+database
+tests
+tools
+reference
+PLAN.md
+SETUP.md
+*.sql
+node_modules
